@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Tracker</title>
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --card-bg: #1c1c1e;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --profit: #32d74b;
+            --loss: #ff453a;
+            --border: #2c2c2e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 20px; margin: 0; }
+        .header p { color: var(--text-muted); font-size: 12px; margin: 5px 0 0 0; }
+        
+        .add-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .add-btn:hover { background: var(--border); }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+        }
+        .stat-card span {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .stat-card h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .text-profit { color: var(--profit); }
+        .text-loss { color: var(--loss); }
+
+        /* Calendar */
+        .calendar-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day-cell {
+            aspect-ratio: 1;
+            background-color: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .day-cell .date-num { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .day-cell .day-pnl { font-size: 12px; font-weight: bold; }
+
+        /* Modal Form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .modal-actions button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-cancel { background: var(--bg-dark); color: white; border: 1px solid var(--border); }
+        .btn-save { background: white; color: black; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>Trade Tracker</h1>
+            <p>Track your trades, analyze performance</p>
+        </div>
+        <button class="add-btn" onclick="openModal()">+ Add Trade</button>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span>Month P&L</span>
+            <h3 id="stat-month-pnl">$0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Win Rate</span>
+            <h3 id="stat-winrate">0%</h3>
+        </div>
+        <div class="stat-card">
+            <span>Trading Days</span>
+            <h3 id="stat-days">0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Best Day</span>
+            <h3 id="stat-best" class="text-profit">+$0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Worst Day</span>
+            <h3 id="stat-worst" class="text-loss">-$0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Profit Factor</span>
+            <h3 id="stat-pf">0.00</h3>
+        </div>
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="calendar-container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span style="font-weight: bold;" id="current-month-display">September 2026</span>
+        </div>
+        <div class="weekdays">
+            <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+        </div>
+        <div class="days" id="calendar-days">
+            <!-- JS will generate days here -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Trade Modal -->
+<div class="modal" id="tradeModal">
+    <div class="modal-content">
+        <h2 style="margin-top: 0;">Add New Trade</h2>
+        <form id="tradeForm">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="t-date" required>
+            </div>
+            <div class="form-group">
+                <label>Asset</label>
+                <select id="t-asset">
+                    <option value="XAUUSD">XAUUSD (Gold)</option>
+                    <option value="Forex">Forex Majors</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Setup</label>
+                <select id="t-setup">
+                    <option value="Fair Value Gap">Fair Value Gap (FVG)</option>
+                    <option value="Order Block">Order Block</option>
+                    <option value="Fibonacci">Fibonacci Retracement</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>P&L ($) - ใส่ค่าติดลบหากขาดทุน</label>
+                <input type="number" id="t-pnl" step="0.01" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ข้อมูลเริ่มต้น
+    let trades = [];
+
+    // ฟังก์ชันจัดการ Modal
+    function openModal() {
+        document.getElementById('t-date').valueAsDate = new Date();
+        document.getElementById('tradeModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('tradeModal').style.display = 'none';
+        document.getElementById('tradeForm').reset();
+    }
+
+    // บันทึกข้อมูล
+    document.getElementById('tradeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('t-date').value;
+        const pnl = parseFloat(document.getElementById('t-pnl').value);
+        
+        trades.push({ date, pnl });
+        updateDashboard();
+        closeModal();
+    });
+
+    function updateDashboard() {
+        if (trades.length === 0) return;
+
+        // คำนวณ Stats
+        let totalPnl = 0, winCount = 0, grossProfit = 0, grossLoss = 0;
+        let dailyPnl = {};
+
+        trades.forEach(t => {
+            totalPnl += t.pnl;
+            if (t.pnl > 0) { winCount++; grossProfit += t.pnl; }
+            if (t.pnl < 0) { grossLoss += Math.abs(t.pnl); }
+            
+            // รวมยอดรายวัน
+            dailyPnl[t.date] = (dailyPnl[t.date] || 0) + t.pnl;
+        });
+
+        // อัปเดต Stats UI
+        const winRate = ((winCount / trades.length) * 100).toFixed(0);
+        const profitFactor = grossLoss === 0 ? grossProfit : (grossProfit / grossLoss);
+        const daysArray = Object.values(dailyPnl);
+        const bestDay = Math.max(...daysArray, 0);
+        const worstDay = Math.min(...daysArray, 0);
+        const tradingDays = Object.keys(dailyPnl).length;
+
+        const pnlEl = document.getElementById('stat-month-pnl');
+        pnlEl.innerText = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(0);
+        pnlEl.className = totalPnl >= 0 ? 'text-profit' : 'text-loss';
+
+        document.getElementById('stat-winrate').innerText = winRate + '%';
+        document.getElementById('stat-days').innerText = tradingDays;
+        document.getElementById('stat-best').innerText = '+$' + bestDay.toFixed(0);
+        document.getElementById('stat-worst').innerText = '-$' + Math.abs(worstDay).toFixed(0);
+        document.getElementById('stat-pf').innerText = profitFactor.toFixed(2);
+
+        renderCalendar(dailyPnl);
+    }
+
+    // สร้างปฏิทินแบบง่าย (จำลองเดือน ก.ย. ตามบริบทปัจจุบัน)
+    function renderCalendar(dailyPnl) {
+        const calContainer = document.getElementById('calendar-days');
+        calContainer.innerHTML = '';
+        
+        // ก.ย. มี 30 วัน เริ่มต้นสมมติให้วันที่ 1 อยู่ตำแหน่งที่ 2 (วันอังคาร)
+        const emptyStartDays = 1; 
+        
+        for(let i = 0; i < emptyStartDays; i++) {
+            calContainer.innerHTML += `<div></div>`; // ช่องว่าง
+        }
+
+        for(let day = 1; day <= 30; day++) {
+            // สร้าง format วันที่ yyyy-mm-dd สำหรับเทียบ (ใช้ 2026-09 เป็นตัวอย่าง)
+            const dateStr = `2026-09-${String(day).padStart(2, '0')}`;
+            const pnl = dailyPnl[dateStr] || 0;
+            
+            let pnlHtml = '';
+            if (pnl > 0) {
+                pnlHtml = `<span class="day-pnl text-profit">+$${pnl}</span>`;
+            } else if (pnl < 0) {
+                pnlHtml = `<span class="day-pnl text-loss">-$${Math.abs(pnl)}</span>`;
+            }
+
+            calContainer.innerHTML += `
+                <div class="day-cell">
+                    <span class="date-num">${day}</span>
+                    ${pnlHtml}
+                </div>
+            `;
+        }
+    }
+
+    // วาดปฏิทินเปล่าตอนเริ่มต้น
+    renderCalendar({});
+</script>
+
+</body>
+</html>
