@@ -1,313 +1,206 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade Tracker - Fast Entry</title>
-    <style>
-        :root {
-            --bg-dark: #0f0f0f;
-            --card-bg: #1c1c1e;
-            --text-main: #ffffff;
-            --text-muted: #8e8e93;
-            --profit: #32d74b;
-            --loss: #ff453a;
-            --border: #2c2c2e;
-            --hover-bg: rgba(255, 255, 255, 0.1);
-        }
+  <meta charset="UTF-8">
+  <title>Arduino Wiring Animation - Gas Detector</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e2f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 { margin-bottom: 5px; color: #00d2d3; }
+    #desc {
+      font-size: 18px;
+      margin-bottom: 15px;
+      height: 40px;
+      color: #ff9f43;
+      text-align: center;
+    }
+    svg {
+      background: #27293d;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .btn-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    button {
+      background: #0abde3;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    button:hover { background: #48dbfb; }
+    button:disabled { background: #576574; cursor: not-allowed; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background-color: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: left;
-        }
-        .stat-card span {
-            display: block;
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        .stat-card h3 { margin: 0; font-size: 18px; }
-        .text-profit { color: var(--profit); }
-        .text-loss { color: var(--loss); }
-
-        /* Calendar */
-        .calendar-container {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-        .day-cell {
-            aspect-ratio: 1;
-            background-color: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            padding: 5px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            position: relative;
-        }
-        .day-cell:hover {
-            background-color: var(--hover-bg);
-            border: 1px solid var(--border);
-            transform: scale(1.05);
-        }
-        .day-cell .date-num { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; pointer-events: none; }
-        .day-cell .day-pnl { font-size: 12px; font-weight: bold; pointer-events: none; }
-
-        /* Quick Input Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 300px;
-            text-align: center;
-        }
-        .modal-content h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; }
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-            text-align: center;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: white;
-            border-radius: 8px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-        .modal-actions { display: flex; gap: 10px; justify-content: center; }
-        .modal-actions button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-        }
-        .btn-cancel { background: var(--bg-dark); color: white; border: 1px solid var(--border); }
-        .btn-save { background: white; color: black; }
-    </style>
+    /* Animation effects */
+    .wire {
+      stroke-dasharray: 8;
+      animation: dash 1s linear infinite;
+      transition: opacity 0.5s ease-in-out;
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -16; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Stats Section -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span>Month P&L</span>
-            <h3 id="stat-month-pnl">$0</h3>
-        </div>
-        <div class="stat-card">
-            <span>Win Rate</span>
-            <h3 id="stat-winrate">0%</h3>
-        </div>
-        <div class="stat-card">
-            <span>Trading Days</span>
-            <h3 id="stat-days">0</h3>
-        </div>
-        <div class="stat-card">
-            <span>Best Day</span>
-            <h3 id="stat-best" class="text-profit">+$0</h3>
-        </div>
-        <div class="stat-card">
-            <span>Worst Day</span>
-            <h3 id="stat-worst" class="text-loss">-$0</h3>
-        </div>
-        <div class="stat-card">
-            <span>Profit Factor</span>
-            <h3 id="stat-pf">0.00</h3>
-        </div>
-    </div>
+  <h2>แอนิเมชันขั้นตอนการต่อวงจรตรวจจับแก๊ส</h2>
+  <div id="desc">กดปุ่ม "ขั้นตอนถัดไป" เพื่อเริ่มดูการต่อสายทีละเส้น</div>
 
-    <!-- Calendar Section -->
-    <div class="calendar-container">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span style="font-weight: bold;" id="current-month-display">September 2026</span>
-        </div>
-        <div class="weekdays">
-            <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
-        </div>
-        <div class="days" id="calendar-days">
-            <!-- JS will generate days here -->
-        </div>
-    </div>
-</div>
+  <svg width="860" height="520" viewBox="0 0 860 520">
+    <!-- Arduino Uno Board -->
+    <rect x="280" y="140" width="280" height="230" rx="10" fill="#0984e3" stroke="#74b9ff" stroke-width="3"/>
+    <text x="420" y="250" fill="#ffffff" font-size="20" font-weight="bold" text-anchor="middle">Arduino UNO R3</text>
+    
+    <!-- Power/GND Pins Header Bottom -->
+    <rect x="330" y="350" width="180" height="15" fill="#2d3436"/>
+    <!-- Digital Pins Header Top -->
+    <rect x="330" y="145" width="220" height="15" fill="#2d3436"/>
 
-<!-- Fast Entry Modal -->
-<div class="modal" id="quickModal">
-    <div class="modal-content">
-        <h3>Date: <span id="display-date-modal" style="color:var(--profit);"></span></h3>
-        <form id="quickForm">
-            <input type="hidden" id="q-date">
-            <input type="number" id="q-pnl" step="0.01" required placeholder="กำไร/ขาดทุน (เช่น 150 หรือ -50)" autocomplete="off">
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-                <button type="submit" class="btn-save">บันทึก</button>
-            </div>
-        </form>
-    </div>
-</div>
+    <!-- Pin Labels UNO -->
+    <text x="360" y="340" fill="#dfe6e9" font-size="11" text-anchor="middle">5V</text>
+    <circle id="pin-5v" cx="360" cy="357" r="4" fill="#ff7675"/>
 
-<script>
-    // เก็บข้อมูลยอดรวมรายวัน
-    let dailyPnl = {}; 
+    <text x="390" y="340" fill="#dfe6e9" font-size="11" text-anchor="middle">GND</text>
+    <circle id="pin-gnd" cx="390" cy="357" r="4" fill="#636e72"/>
 
-    // เปิด Modal เมื่อกดที่วันที่
-    function openQuickEntry(dateString) {
-        document.getElementById('q-date').value = dateString;
-        document.getElementById('display-date-modal').innerText = dateString;
-        
-        // ดึงค่ายอดเงินเดิมมาโชว์ (ถ้ามี)
-        document.getElementById('q-pnl').value = dailyPnl[dateString] || '';
-        
-        document.getElementById('quickModal').style.display = 'flex';
-        
-        // Auto focus ให้พิมพ์ตัวเลขได้เลยไม่ต้องเอาเมาส์ไปคลิกซ้ำ
-        setTimeout(() => {
-            document.getElementById('q-pnl').focus();
-        }, 100);
+    <text x="470" y="340" fill="#dfe6e9" font-size="11" text-anchor="middle">A0</text>
+    <circle id="pin-a0" cx="470" cy="357" r="4" fill="#a29bfe"/>
+
+    <text x="495" y="175" fill="#dfe6e9" font-size="11" text-anchor="middle">D3</text>
+    <circle id="pin-d3" cx="495" cy="153" r="4" fill="#ffeaa7"/>
+
+    <text x="435" y="175" fill="#dfe6e9" font-size="11" text-anchor="middle">D9</text>
+    <circle id="pin-d9" cx="435" cy="153" r="4" fill="#ff7675"/>
+
+    <text x="415" y="175" fill="#dfe6e9" font-size="11" text-anchor="middle">D10</text>
+    <circle id="pin-d10" cx="415" cy="153" r="4" fill="#55efc4"/>
+
+    <text x="395" y="175" fill="#dfe6e9" font-size="11" text-anchor="middle">D11</text>
+    <circle id="pin-d11" cx="395" cy="153" r="4" fill="#74b9ff"/>
+
+    <!-- Module 1: MQ-2 (Left) -->
+    <g transform="translate(40, 180)">
+      <rect width="130" height="140" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="2"/>
+      <circle cx="65" cy="60" r="35" fill="#b2bec3" stroke="#dfe6e9" stroke-width="2"/>
+      <text x="65" y="65" fill="#2d3436" font-size="13" font-weight="bold" text-anchor="middle">MQ-2</text>
+      <!-- Pins -->
+      <circle id="mq-vcc" cx="130" cy="30" r="4" fill="#ff7675"/><text x="115" y="34" fill="#fff" font-size="10">VCC</text>
+      <circle id="mq-gnd" cx="130" cy="60" r="4" fill="#636e72"/><text x="115" y="64" fill="#fff" font-size="10">GND</text>
+      <circle id="mq-a0"  cx="130" cy="90" r="4" fill="#a29bfe"/><text x="115" y="94" fill="#fff" font-size="10">A0</text>
+    </g>
+
+    <!-- Module 2: Passive Buzzer 3-pin (Top Right) -->
+    <g transform="translate(670, 40)">
+      <rect width="130" height="110" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="2"/>
+      <circle cx="65" cy="45" r="25" fill="#1e272e" stroke="#485460" stroke-width="2"/>
+      <text x="65" y="50" fill="#fff" font-size="12" text-anchor="middle">Buzzer</text>
+      <!-- Pins -->
+      <circle id="bz-vcc" cx="0" cy="30" r="4" fill="#ff7675"/><text x="12" y="34" fill="#fff" font-size="10">VCC</text>
+      <circle id="bz-gnd" cx="0" cy="55" r="4" fill="#636e72"/><text x="12" y="59" fill="#fff" font-size="10">GND</text>
+      <circle id="bz-io"  cx="0" cy="80" r="4" fill="#ffeaa7"/><text x="12" y="84" fill="#fff" font-size="10">I/O</text>
+    </g>
+
+    <!-- Module 3: KY-016 RGB LED (Bottom Right) -->
+    <g transform="translate(670, 310)">
+      <rect width="130" height="140" rx="8" fill="#2d3436" stroke="#636e72" stroke-width="2"/>
+      <circle cx="65" cy="55" r="22" fill="#dfe6e9" opacity="0.8"/>
+      <text x="65" y="60" fill="#2d3436" font-size="11" font-weight="bold" text-anchor="middle">RGB LED</text>
+      <!-- Pins -->
+      <circle id="rgb-gnd" cx="0" cy="30" r="4" fill="#636e72"/><text x="12" y="34" fill="#fff" font-size="10">- (GND)</text>
+      <circle id="rgb-r"   cx="0" cy="55" r="4" fill="#ff7675"/><text x="12" y="59" fill="#fff" font-size="10">R</text>
+      <circle id="rgb-g"   cx="0" cy="80" r="4" fill="#55efc4"/><text x="12" y="84" fill="#fff" font-size="10">G</text>
+      <circle id="rgb-b"   cx="0" cy="105" r="4" fill="#74b9ff"/><text x="12" y="109" fill="#fff" font-size="10">B</text>
+    </g>
+
+    <!-- WIRES (เส้นต่อสายไฟ) -->
+    <!-- W1: MQ2 VCC -> 5V -->
+    <path id="w1" class="wire" d="M 170 210 C 230 210, 260 410, 360 357" fill="none" stroke="#e74c3c" stroke-width="3" opacity="0"/>
+    <!-- W2: MQ2 GND -> GND -->
+    <path id="w2" class="wire" d="M 170 240 C 240 240, 280 430, 390 357" fill="none" stroke="#2d3436" stroke-width="3" opacity="0"/>
+    <!-- W3: MQ2 A0 -> A0 -->
+    <path id="w3" class="wire" d="M 170 270 C 270 270, 360 460, 470 357" fill="none" stroke="#9b59b6" stroke-width="3" opacity="0"/>
+    <!-- W4: Buzzer VCC -> 5V -->
+    <path id="w4" class="wire" d="M 670 70 C 580 70, 320 300, 360 357" fill="none" stroke="#e74c3c" stroke-width="3" opacity="0"/>
+    <!-- W5: Buzzer GND -> GND -->
+    <path id="w5" class="wire" d="M 670 95 C 600 95, 360 310, 390 357" fill="none" stroke="#2d3436" stroke-width="3" opacity="0"/>
+    <!-- W6: Buzzer I/O -> D3 -->
+    <path id="w6" class="wire" d="M 670 120 C 580 120, 530 110, 495 153" fill="none" stroke="#f1c40f" stroke-width="3" opacity="0"/>
+    <!-- W7: RGB - (GND) -> GND -->
+    <path id="w7" class="wire" d="M 670 340 C 550 340, 430 420, 390 357" fill="none" stroke="#2d3436" stroke-width="3" opacity="0"/>
+    <!-- W8: RGB R -> D9 -->
+    <path id="w8" class="wire" d="M 670 365 C 600 365, 460 70, 435 153" fill="none" stroke="#e84118" stroke-width="3" opacity="0"/>
+    <!-- W9: RGB G -> D10 -->
+    <path id="w9" class="wire" d="M 670 390 C 620 390, 440 60, 415 153" fill="none" stroke="#4cd137" stroke-width="3" opacity="0"/>
+    <!-- W10: RGB B -> D11 -->
+    <path id="w10" class="wire" d="M 670 415 C 640 415, 420 50, 395 153" fill="none" stroke="#00a8ff" stroke-width="3" opacity="0"/>
+  </svg>
+
+  <div class="btn-group">
+    <button id="prevBtn" onclick="prevStep()" disabled>ย้อนกลับ</button>
+    <button id="nextBtn" onclick="nextStep()">ขั้นตอนถัดไป</button>
+    <button onclick="resetAll()">เริ่มใหม่</button>
+  </div>
+
+  <script>
+    let step = 0;
+    const steps = [
+      { text: "กด 'ขั้นตอนถัดไป' เพื่อเริ่มต่อวงจร", wires: [] },
+      { text: "1. ต่อสายไฟเลี้ยง MQ-2 (VCC) สีแดง เข้าพิน 5V ของบอร์ด Arduino", wires: ["w1"] },
+      { text: "2. ต่อสายกราวด์ MQ-2 (GND) สีดำ เข้าพิน GND", wires: ["w2"] },
+      { text: "3. ต่อขาสัญญาณ MQ-2 (A0) สีม่วง เข้าพินอนาล็อก A0", wires: ["w3"] },
+      { text: "4. ต่อไฟเลี้ยง Buzzer (VCC) สีแดง ร่วมกับราง 5V", wires: ["w4"] },
+      { text: "5. ต่อกราวด์ Buzzer (GND) สีดำ เข้า GND", wires: ["w5"] },
+      { text: "6. ต่อขาสัญญาณ Buzzer (I/O) สีเหลือง เข้าพิน D3 (PWM)", wires: ["w6"] },
+      { text: "7. ต่อขากราวด์ RGB LED (-) สีดำ เข้า GND", wires: ["w7"] },
+      { text: "8. ต่อขา R (สีแดง) ของ LED RGB เข้าพิน D9", wires: ["w8"] },
+      { text: "9. ต่อขา G (สีเขียว) ของ LED RGB เข้าพิน D10", wires: ["w9"] },
+      { text: "10. ต่อขา B (สีน้ำเงิน) ของ LED RGB เข้าพิน D11 (เสร็จสิ้นวงจร!)", wires: ["w10"] }
+    ];
+
+    function updateView() {
+      document.getElementById('desc').innerText = steps[step].text;
+      for (let i = 1; i <= 10; i++) {
+        const wire = document.getElementById('w' + i);
+        wire.style.opacity = (i <= step) ? "1" : "0";
+      }
+      document.getElementById('prevBtn').disabled = (step === 0);
+      document.getElementById('nextBtn').disabled = (step === steps.length - 1);
     }
 
-    function closeModal() {
-        document.getElementById('quickModal').style.display = 'none';
+    function nextStep() {
+      if (step < steps.length - 1) {
+        step++;
+        updateView();
+      }
     }
 
-    // เมื่อกดปุ่มบันทึก
-    document.getElementById('quickForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const date = document.getElementById('q-date').value;
-        const pnl = parseFloat(document.getElementById('q-pnl').value);
-        
-        // อัปเดตข้อมูลของวันนั้น
-        if (!isNaN(pnl)) {
-            dailyPnl[date] = pnl;
-        } else {
-            delete dailyPnl[date]; // ถ้าลบข้อความออก ให้ลบข้อมูลทิ้ง
-        }
-        
-        updateDashboard();
-        closeModal();
-    });
-
-    function updateDashboard() {
-        let totalPnl = 0, winCount = 0, grossProfit = 0, grossLoss = 0;
-        const daysArray = Object.values(dailyPnl);
-        const tradingDays = daysArray.length;
-
-        daysArray.forEach(pnl => {
-            totalPnl += pnl;
-            if (pnl > 0) { winCount++; grossProfit += pnl; }
-            if (pnl < 0) { grossLoss += Math.abs(pnl); }
-        });
-
-        // คำนวณสถิติ
-        const winRate = tradingDays > 0 ? ((winCount / tradingDays) * 100).toFixed(0) : 0;
-        const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : (grossProfit / grossLoss);
-        const bestDay = daysArray.length > 0 ? Math.max(...daysArray, 0) : 0;
-        const worstDay = daysArray.length > 0 ? Math.min(...daysArray, 0) : 0;
-
-        // อัปเดตหน้าจอ
-        const pnlEl = document.getElementById('stat-month-pnl');
-        pnlEl.innerText = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(0);
-        pnlEl.className = totalPnl >= 0 ? 'text-profit' : 'text-loss';
-
-        document.getElementById('stat-winrate').innerText = winRate + '%';
-        document.getElementById('stat-days').innerText = tradingDays;
-        document.getElementById('stat-best').innerText = '+$' + bestDay.toFixed(0);
-        document.getElementById('stat-worst').innerText = '-$' + Math.abs(worstDay).toFixed(0);
-        document.getElementById('stat-pf').innerText = profitFactor.toFixed(2);
-
-        renderCalendar();
+    function prevStep() {
+      if (step > 0) {
+        step--;
+        updateView();
+      }
     }
 
-    function renderCalendar() {
-        const calContainer = document.getElementById('calendar-days');
-        calContainer.innerHTML = '';
-        
-        // สมมติให้เดือนกันยายน 2026 วันที่ 1 เริ่มวันอังคาร (เว้น 1 ช่องของวันจันทร์)
-        const emptyStartDays = 1; 
-        
-        for(let i = 0; i < emptyStartDays; i++) {
-            calContainer.innerHTML += `<div></div>`;
-        }
-
-        for(let day = 1; day <= 30; day++) {
-            const dateStr = `2026-09-${String(day).padStart(2, '0')}`;
-            const pnl = dailyPnl[dateStr] || 0;
-            
-            let pnlHtml = '';
-            if (pnl > 0) {
-                pnlHtml = `<span class="day-pnl text-profit">+$${pnl}</span>`;
-            } else if (pnl < 0) {
-                pnlHtml = `<span class="day-pnl text-loss">-$${Math.abs(pnl)}</span>`;
-            }
-
-            // แสดงวันที่และยอดเงิน กดคลิกเพื่อเปิดหน้าต่างกรอกข้อมูล
-            calContainer.innerHTML += `
-                <div class="day-cell" onclick="openQuickEntry('${dateStr}')">
-                    <span class="date-num">${day}</span>
-                    ${pnlHtml}
-                </div>
-            `;
-        }
+    function resetAll() {
+      step = 0;
+      updateView();
     }
-
-    // เรียกฟังก์ชันวาดปฏิทินตอนเริ่มต้น
-    renderCalendar();
-</script>
-
+  </script>
 </body>
 </html>
